@@ -31,6 +31,7 @@
         <mapping uri="" method="POST" api="create"/>
         <mapping uri="/$batch" method="POST" api="batchCreate"/>
         <mapping uri="/:id" method="PUT" api="modify"/>
+        <mapping uri="/:id" method="PATCH" api="patchUp"/>
         <mapping uri="/:id" method="GET" api="view"/>
         <mapping uri="/:id" method="DELETE" api="remove"/>
         <mapping uri="" method="GET" api="viewAll"/>
@@ -40,6 +41,7 @@
         <mapping uri="" method="POST" api="create"/>
         <mapping uri="/$batch" method="POST" api="batchCreate"/>
         <mapping uri="/:id" method="PUT" api="modify"/>
+        <mapping uri="/:id" method="PATCH" api="patchUp"/>
         <mapping uri="/:id" method="GET" api="view"/>
         <mapping uri="/:id" method="DELETE" api="remove"/>
         <mapping uri="" method="GET" api="viewAll"/>

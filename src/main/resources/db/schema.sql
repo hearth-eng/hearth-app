@@ -25,6 +25,8 @@ CREATE TABLE fks_provinces (
     province_name       VARCHAR(128)    ,
     region              VARCHAR(32)     ,
     language            VARCHAR(30)     NOT NULL,
+    status              VARCHAR(20)     NOT NULL CHECK (status IN ('PLANNED', 'ACTIVE', 'PAUSED', 'INACTIVE')),
+    launched_at         DATE            ,
     created_at          TIMESTAMP       NOT NULL,
     updated_at          TIMESTAMP       
 );

@@ -1,7 +1,10 @@
 package com.hearth.app.model;
 
+import jakarta.persistence.CheckConstraint;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -10,6 +13,7 @@ import jakarta.persistence.NamedNativeQueries;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.Table;
 import java.io.Serializable;
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.util.Objects;
 
@@ -28,6 +32,13 @@ import java.util.Objects;
 })
 public class Province implements Serializable, Cloneable {
 
+    public static enum Status {
+        PLANNED,
+        ACTIVE,
+        PAUSED,
+        INACTIVE;
+    };
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "province_id", nullable = false, updatable = false, precision = 32)
@@ -44,6 +55,13 @@ public class Province implements Serializable, Cloneable {
 
     @Column(name = "language", nullable = false, updatable = true, length = 30)
     private String language;
+
+    @Column(name = "status", nullable = false, updatable = true, check = @CheckConstraint(constraint = "status IN ('PLANNED', 'ACTIVE', 'PAUSED', 'INACTIVE')"))
+    @Enumerated(EnumType.STRING)
+    private Status status;
+
+    @Column(name = "launched_at", nullable = true, updatable = true)
+    private Date launchedAt;
 
     @Column(name = "created_at", nullable = false, updatable = true)
     private Timestamp createdAt;
@@ -91,6 +109,22 @@ public class Province implements Serializable, Cloneable {
 
     public String getLanguage() {
         return this.language;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status;
+    }
+
+    public Date getLaunchedAt() {
+        return launchedAt;
+    }
+
+    public void setLaunchedAt(Date launchedAt) {
+        this.launchedAt = launchedAt;
     }
 
     public void setCreatedAt(Timestamp createdAt) {

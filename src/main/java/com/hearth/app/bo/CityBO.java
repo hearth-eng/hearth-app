@@ -103,11 +103,50 @@ public class CityBO extends AbstractBO {
         }
         return existing;
     }
+    
+    public City mmodifyPartial(AppUser usr, City city) throws IllegalAccessException {
+        // Only admin has the privilege to register a city.
+        ensureAdmin(usr);
+        
+        StopWatch timer = StopWatch.newTimer();
+        timer.start();
+
+        // First fetch the entry, to see if this already exists.
+        City existing = cityDAO.find(new City.CityPK(city.getCityId()));
+        if (existing == null) {
+            throw new IllegalArgumentException("No city found for identifier: " + city.getCityId());
+        }
+        // Update attributes of existing record
+        if (city.getCityName() != null) {
+            existing.setCityName(city.getCityName());
+        }
+        if (city.getImageKey() != null) {
+            existing.setImageKey(city.getImageKey());
+        }
+        if (city.getLaunchedAt() != null) {
+            existing.setLaunchedAt(city.getLaunchedAt());
+        }
+        if (city.getStatus() != null) {
+            existing.setStatus(city.getStatus());
+        }
+        existing.setUpdatedAt(new Timestamp(DateUtil.currentUTCDate().getTime()));
+
+        cityDAO.update(existing);
+        timer.stop();
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Partial modification of city is successfully. Elapsed time(ms): {}", timer.elapsedTimeMillis());
+        }
+        return existing;
+    }
 
     public List<City> viewAll(AppUser usr, QueryParams params) {
         StopWatch timer = StopWatch.newTimer();
         timer.start();
 
+        if (! params.contains("status")) {
+            params.entries().put("status", List.of(City.Status.ACTIVE.name()));
+        }
         SearchCriteria search = SearchCriteria.from(params);
         List<City> rows = cityDAO.query(search);
 

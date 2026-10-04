@@ -91,6 +91,8 @@ public class ProvinceBO extends AbstractBO {
         existing.setProvinceName(province.getProvinceName());
         existing.setRegion(province.getRegion());
         existing.setLanguage(province.getLanguage());
+        existing.setLaunchedAt(province.getLaunchedAt());
+        existing.setStatus(province.getStatus());
         existing.setUpdatedAt(new Timestamp(DateUtil.currentUTCDate().getTime()));
 
         provinceDAO.update(existing);
@@ -101,11 +103,56 @@ public class ProvinceBO extends AbstractBO {
         }
         return existing;
     }
+    
+    public Province mmodifyPartial(AppUser usr, Province province) throws IllegalAccessException {
+        // Only admin has the privilege to register a city.
+        ensureAdmin(usr);
+        
+        StopWatch timer = StopWatch.newTimer();
+        timer.start();
+
+        // First fetch the entry, to see if this already exists.
+        Province existing = provinceDAO.find(new Province.ProvincePK(province.getProvinceId()));
+        if (existing == null) {
+            throw new IllegalArgumentException("No province found for identifier: " + province.getProvinceId());
+        }
+        // Update attributes of existing record
+        if (province.getCountryId() != null) {
+            existing.setCountryId(province.getCountryId());
+        }
+        if (province.getProvinceName() != null) {
+            existing.setProvinceName(province.getProvinceName());
+        }
+        if (province.getRegion() != null) {
+            existing.setRegion(province.getRegion());
+        }
+        if (province.getLanguage() != null) {
+            existing.setLanguage(province.getLanguage());
+        }
+        if (province.getStatus() != null) {
+            existing.setStatus(province.getStatus());
+        }
+        if (province.getLaunchedAt() != null) {
+            existing.setLaunchedAt(province.getLaunchedAt());
+        }
+        existing.setUpdatedAt(new Timestamp(DateUtil.currentUTCDate().getTime()));
+
+        provinceDAO.update(existing);
+        timer.stop();
+
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Partial modification of province is successfully. Elapsed time(ms): {}", timer.elapsedTimeMillis());
+        }
+        return existing;
+    }
 
     public List<Province> viewAll(AppUser usr, QueryParams params) {
         StopWatch timer = StopWatch.newTimer();
         timer.start();
 
+        if (! params.contains("status")) {
+            params.entries().put("status", List.of(Province.Status.ACTIVE.name()));
+        }
         SearchCriteria search = SearchCriteria.from(params);
         List<Province> rows = provinceDAO.query(search);
 

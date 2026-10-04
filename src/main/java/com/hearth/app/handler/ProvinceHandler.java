@@ -127,6 +127,48 @@ public class ProvinceHandler extends AbstractHandler {
     }
     
     /**
+     * Partially modify an existing resource by it's id (PUT request).
+     * 
+     * <p>
+     * If no corresponding resource is found then this method will throw {@link NoSuchElementException}
+     * resulting a <code>404</code> response.
+     * 
+     * <p>
+     * For a PUT request, the server expects you to include all the information for the resource, even if
+     * you only want to update a small part of it. If you leave something out, that part of the resource
+     * will be erased or set to default.
+     * 
+     * @param ctx   Vertx {@link RoutingContext} object.
+     */
+    public void patchUp(RoutingContext ctx) {
+        final String id = ctx.pathParam("id");
+        
+        // If you use a remote store, this method will safely execute the blocking code.
+        vertx().executeBlocking(() -> {
+            Province province = MapperUtil.decode(ctx.body().buffer().getBytes(), Province.class);
+            province.setProvinceId(Integer.valueOf(id));
+
+
+            // First fetch the entry, to see if this already exists.
+            Province rs = provinceBO.mmodifyPartial(user(ctx), province);
+
+            ServerMessage msg = new ServerMessage();
+            msg.setCode(HttpURLConnection.HTTP_OK);
+            msg.setMessage("Province modified successfully");
+
+            return msg;
+            
+        }).onComplete(result -> {
+            if (result.succeeded()) {
+                sendResponse(ctx, HttpURLConnection.HTTP_OK, result.result());
+            }
+            else {
+                ctx.fail(result.cause());
+            }
+        });
+    }
+    
+    /**
      * View a specific resource by it's id.
      * 
      * <p>
