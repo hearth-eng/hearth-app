@@ -7,7 +7,7 @@
 -->
 <server-config>
     <server-opts>
-    	<port>9443</port>
+    	<port>8443</port>
         <client-auth>REQUIRED</client-auth>
     </server-opts>
     <tcp-opts>
