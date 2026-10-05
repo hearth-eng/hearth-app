@@ -44,6 +44,19 @@ jobs:
         with:
           ref: ${{ steps.v.outputs.tag }}
 
+      - name: TEMP DEBUG - decode OIDC token claims
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const idToken = await core.getIDToken('sts.amazonaws.com');
+            const payload = JSON.parse(Buffer.from(idToken.split('.')[1], 'base64').toString());
+            console.log('aud:', payload.aud);
+            console.log('sub:', payload.sub);
+            console.log('iss:', payload.iss);
+            console.log('repository:', payload.repository);
+            console.log('environment:', payload.environment);
+            console.log('ref:', payload.ref);
+
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
