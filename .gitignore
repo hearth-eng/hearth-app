@@ -6,4 +6,5 @@
 .DS_Store
 *.rdb
 *.cer
-src/main/resources/hearth.pkcs
+src/main/resources/keystore/
+src/main/resources/client_cert/

@@ -234,11 +234,6 @@ public class TestHttpServerResponse implements HttpServerResponse {
     }
 
     @Override
-    public int streamId() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
     public Future<HttpServerResponse> push(HttpMethod method, HostAndPort authority, String path, MultiMap headers) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -300,6 +295,21 @@ public class TestHttpServerResponse implements HttpServerResponse {
 
     @Override
     public Future<Void> writeCustomFrame(int type, int flags, Buffer payload) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Future<Boolean> cancel() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public Future<Void> writeAltSvc(String string) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public long streamId() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
     

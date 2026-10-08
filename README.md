@@ -253,9 +253,9 @@ If you want to override the expiry time, add the `expiry` tag and specify the ex
 ```
 curl -i \
     -X POST \
-    --cert /path/to/hearth-app/src/main/resources/client_cert/hearth-client.crt \
-    --key /path/to/hearth-app/src/main/resources/client_cert/hearth-client.key \
-    --cacert /path/to/hearth-app/src/main/resources/ca/ca_javalabs.crt \
+    --cert src/main/resources/client_cert/hearth-client.crt \
+    --key src/main/resources/client_cert/hearth-client.key \
+    --cacert src/main/resources/ca/ca_javalabs.crt \
     -H "Authorization: Bearer {access_token}" \
     -H "Content-Type:application/json" \
     --data-binary @./user.json \
@@ -451,10 +451,10 @@ This is how the end-to-end communication would look like.
 Browser
     │ HTTPS
     ▼
-Node.js        https://localhost:3000
+Node.js        https://localhost:8443
     │ mTLS
     ▼
-Vert.x         https://localhost:8443
+Vert.x         https://localhost:9443
 
 ```
 
@@ -698,7 +698,7 @@ This file stores certificate serial-number information used by the CA.
 keytool -genkeypair \
     -alias RS256 \
     -keyalg RSA \
-    -sigalg SHA384withRSA \
+    -sigalg SHA256withRSA \
     -keysize 2048 \
     -validity 365 \
     -keystore hearth.pkcs \

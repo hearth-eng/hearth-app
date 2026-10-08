@@ -9,6 +9,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import java.io.IOException;
+import java.security.GeneralSecurityException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,6 @@ public class AppContainer extends VertxContainer {
             if (LOGGER.isInfoEnabled()) {
                 LOGGER.info("Read application configuration file {}", cfgFile);
             }
-            
             // Initialize the database.
             EntityManagerFactory emf = initDb();
             
@@ -55,6 +55,19 @@ public class AppContainer extends VertxContainer {
             loadCache(emf);
         }
         catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    
+    @Override
+    protected void postDeploy() {
+        try {
+            // Initialize keystore and mTLS store
+            KeyStorage.getInstance().init();
+            MtlsStorage.getInstance().init();
+            CAStorage.getInstance().init();
+        }
+        catch (GeneralSecurityException e) {
             throw new RuntimeException(e);
         }
     }

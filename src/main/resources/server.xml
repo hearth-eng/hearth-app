@@ -36,18 +36,71 @@
     </cross-origin>
     
     <keystore-config>
+        <!--
+            pem-key-config provides your own certificate (your identity to prove who you are)
+            
+            1. PemKeyCertOptions (Your Identity) - This option is used when you need to prove who you are to the other side of the connection.
+            
+            • Whose certificate is it?
+                It is your own public certificate, and it must be paired with your own private key.
+            • Server Use Case: 
+                When you build an HTTPS server, it is the certificate that browsers check to see if your website is legitimate 
+                (e.g., your domain’s Let's Encrypt certificate).
+            • Client Use Case (mTLS): 
+                In Mutual TLS (mTLS), the server demands to know who the client is. The client uses PemKeyCertOptions to
+                present its own certificate to the server.
+        -->
+        <!--
+            Example:
+            
+            // 1. Configure the key and certificate options
+            PemKeyCertOptions pemOptions = new PemKeyCertOptions()
+                .setKeyPath("server_cert/hearth-app.key")           // Unencrypted PKCS8/PKCS1 format
+                .setCertPath("server_cert/hearth-app.crt");         // X.509 format
+
+            // 2. Apply to HTTP Server Options
+            HttpServerOptions serverOptions = new HttpServerOptions()
+                .setSsl(true) // Enable SSL/TLS
+                .setPemKeyCertOptions(pemOptions);
+
+            // 3. Instantiate and start listening
+            vertx.createHttpServer(serverOptions)
+                .requestHandler(req -> req.response().end("Hello Secure World!"))
+                .listen(8443, res -> {
+                    if (res.succeeded()) {
+                        System.out.println("Secure server running on port 8443");
+                    } else {
+                        System.err.println("Failed to start server: " + res.cause().getMessage());
+                    }
+                });
+        -->
         <pem-key-config>
-            <key-path>server_cert/hearth-app.key</key-path>
-            <cert-path>server_cert/hearth-app.crt</cert-path>
+            <bundle-path>store/hearth-app.pem</bundle-path>
         </pem-key-config>
         
-        <store-name>hearth.pkcs</store-name>
+        <!--
+            This is a separate keystore that holds the private-public key pair for signing and verifying the server issued JWT token.
+        -->
+        <store-name>store/hearth.pkcs</store-name>
         <store-password>secret</store-password>
     </keystore-config>
     
     <truststore-config>
+        <!--
+            2. PemTrustOptions (Your Trust List) - This option is used when you need to verify who the other side is.
+            
+            • Whose certificate is it? 
+                It belongs to Trusted Certificate Authorities (CAs) (like DigiCert, Let's Encrypt) or specific public
+                certificates of servers you expect to talk to. It never contains a private key.
+            • Client Use Case:
+                When your Vert.x application acts as a client calling a third-party secure API, it checks the server’s 
+                certificate against the CAs inside PemTrustOptions to ensure it isn’t talking to a malicious impersonator.
+            • Server Use Case (mTLS):
+                In mTLS, the server uses PemTrustOptions to hold the CA certificates that are allowed to sign client 
+                certificates. If a client connects with a certificate not signed by a CA in this list, the server rejects them.
+        -->
         <pem-cert-config>
-            <cert-path>ca/ca_javalabs.crt</cert-path>
+            <cert-path>store/ca_javalabs.crt</cert-path>
         </pem-cert-config>
     </truststore-config>
     

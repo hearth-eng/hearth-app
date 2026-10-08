@@ -263,6 +263,21 @@
         <mapping uri="" method="PUT" api="modify"/>
     </resource-mapping>
 
+    <resource-mapping name="keystore"
+                      path="/admin/keystore"
+                      resource="com.hearth.app.handler.KeystoreHandler">
+
+        <mapping uri="/aliases" method="GET" api="getAliases"/>
+        <mapping uri="/metadata" method="GET" api="getStorageInfo"/>
+    </resource-mapping>
+
+    <resource-mapping name="query"
+                      path="/admin/query"
+                      resource="com.hearth.app.handler.DBQueryHandler">
+
+        <mapping uri="" method="POST" api="executeSql"/>
+    </resource-mapping>
+
     <resource-mapping name="AvailabilityMgmt" path="/admin/availabilities" resource="com.hearth.app.handler.AvailabilityMgmtHandler">
         <mapping uri="/calendar" method="POST" api="generate"/>
         <mapping uri="/professionals" method="GET" api="viewProfAvailability"/>

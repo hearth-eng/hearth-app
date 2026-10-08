@@ -29,8 +29,8 @@ public class BookingTimer implements Handler<Long> {
         }
         // Add repetitive task ...
         List<Booking> bookings = bookingMgmtBO.pendingBookings();
-        if (LOGGER.isInfoEnabled()) {
-            LOGGER.info("Fetched {} pending booking(s)", bookings.size());
+        if (LOGGER.isDebugEnabled()) {
+            LOGGER.debug("Fetched {} pending booking(s)", bookings.size());
         }
         for (Booking booking : bookings) {
             try {
