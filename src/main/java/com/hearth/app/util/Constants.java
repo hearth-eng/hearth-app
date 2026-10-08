@@ -27,5 +27,8 @@ public class Constants {
     public static final String BOOKING_ADDRESS = "booking.event.address";
     public static final String AVAIL_GEN_ADDRESS = "availability.gen.address";
     public static final String PROF_REG_ADDRESS = "professional.reg.address";
+    public static final String BROADCAST_ADDRESS = "broadcast.event.address";
+    
+    public static final String CACHE_CHANNEL = "cache:ops";
 }
 

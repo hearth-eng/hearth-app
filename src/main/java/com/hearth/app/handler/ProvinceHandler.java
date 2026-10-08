@@ -4,13 +4,19 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.javalabs.decl.util.MapperUtil;
 import org.javalabs.decl.vertx.config.model.ServerMessage;
 import com.hearth.app.bo.ProvinceBO;
+import com.hearth.app.cache.impl.ProvinceCache;
+import com.hearth.app.event.BroadcastEventWrapper;
+import com.hearth.app.listener.CacheEvent;
+import com.hearth.app.listener.CacheOps;
 import com.hearth.app.model.Province;
 import com.hearth.app.model.ItemList;
+import com.hearth.app.util.Constants;
 import com.hearth.app.util.QueryParams;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -53,8 +59,14 @@ public class ProvinceHandler extends AbstractHandler {
             province = provinceBO.create(user(ctx), province);
             
             return province;
+            
         }).onComplete(result -> {
             if (result.succeeded()) {
+                CacheEvent event = new CacheEvent(ProvinceCache.name(), CacheOps.ADD);
+                event.setId(result.result().getProvinceId());
+                event.setElement(result.result());
+                
+                vertx().eventBus().send(Constants.BROADCAST_ADDRESS, new BroadcastEventWrapper(event));
                 sendResponse(ctx, HttpURLConnection.HTTP_CREATED, result.result());
             }
             else {
@@ -148,7 +160,6 @@ public class ProvinceHandler extends AbstractHandler {
             Province province = MapperUtil.decode(ctx.body().buffer().getBytes(), Province.class);
             province.setProvinceId(Integer.valueOf(id));
 
-
             // First fetch the entry, to see if this already exists.
             Province rs = provinceBO.mmodifyPartial(user(ctx), province);
 
@@ -160,6 +171,11 @@ public class ProvinceHandler extends AbstractHandler {
             
         }).onComplete(result -> {
             if (result.succeeded()) {
+                CacheEvent event = new CacheEvent(ProvinceCache.name(), CacheOps.PATCH);
+                event.setId(Integer.valueOf(id));
+                event.setVal(MapperUtil.decode(ctx.body().buffer().getBytes(), Map.class));
+                
+                vertx().eventBus().send(Constants.BROADCAST_ADDRESS, new BroadcastEventWrapper(event));
                 sendResponse(ctx, HttpURLConnection.HTTP_OK, result.result());
             }
             else {
@@ -246,6 +262,10 @@ public class ProvinceHandler extends AbstractHandler {
             
         }).onComplete(result -> {
             if (result.succeeded()) {
+                CacheEvent event = new CacheEvent(ProvinceCache.name(), CacheOps.DELETE);
+                event.setId(Integer.valueOf(id));
+                
+                vertx().eventBus().send(Constants.BROADCAST_ADDRESS, new BroadcastEventWrapper(event));
                 sendResponse(ctx, HttpURLConnection.HTTP_NO_CONTENT, result.result());
             }
             else {

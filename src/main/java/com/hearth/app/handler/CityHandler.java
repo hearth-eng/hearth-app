@@ -4,13 +4,19 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import org.javalabs.decl.util.MapperUtil;
 import org.javalabs.decl.vertx.config.model.ServerMessage;
 import com.hearth.app.bo.CityBO;
+import com.hearth.app.cache.impl.CityCache;
+import com.hearth.app.event.BroadcastEventWrapper;
+import com.hearth.app.listener.CacheEvent;
+import com.hearth.app.listener.CacheOps;
 import com.hearth.app.model.City;
 import com.hearth.app.model.ItemList;
+import com.hearth.app.util.Constants;
 import com.hearth.app.util.QueryParams;
 import io.vertx.core.Vertx;
 import io.vertx.ext.web.RoutingContext;
 import java.net.HttpURLConnection;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 /**
@@ -53,8 +59,14 @@ public class CityHandler extends AbstractHandler {
             city = cityBO.create(user(ctx), city);
             
             return city;
+            
         }).onComplete(result -> {
             if (result.succeeded()) {
+                CacheEvent event = new CacheEvent(CityCache.name(), CacheOps.ADD);
+                event.setId(result.result().getCityId());
+                event.setElement(result.result());
+                
+                vertx().eventBus().send(Constants.BROADCAST_ADDRESS, new BroadcastEventWrapper(event));
                 sendResponse(ctx, HttpURLConnection.HTTP_CREATED, result.result());
             }
             else {
@@ -159,6 +171,11 @@ public class CityHandler extends AbstractHandler {
             
         }).onComplete(result -> {
             if (result.succeeded()) {
+                CacheEvent event = new CacheEvent(CityCache.name(), CacheOps.PATCH);
+                event.setId(Integer.valueOf(id));
+                event.setVal(MapperUtil.decode(ctx.body().buffer().getBytes(), Map.class));
+                
+                vertx().eventBus().send(Constants.BROADCAST_ADDRESS, new BroadcastEventWrapper(event));
                 sendResponse(ctx, HttpURLConnection.HTTP_OK, result.result());
             }
             else {
@@ -245,6 +262,10 @@ public class CityHandler extends AbstractHandler {
             
         }).onComplete(result -> {
             if (result.succeeded()) {
+                CacheEvent event = new CacheEvent(CityCache.name(), CacheOps.DELETE);
+                event.setId(Integer.valueOf(id));
+                
+                vertx().eventBus().send(Constants.BROADCAST_ADDRESS, new BroadcastEventWrapper(event));
                 sendResponse(ctx, HttpURLConnection.HTTP_NO_CONTENT, result.result());
             }
             else {

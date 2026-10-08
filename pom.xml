@@ -32,6 +32,14 @@
             <version>2.2.224</version>
         </dependency>
         
+        <!-- Redis -->
+        <dependency>
+            <groupId>io.lettuce</groupId>
+            <artifactId>lettuce-core</artifactId>
+            <version>7.8.0.RELEASE</version>
+            <scope>compile</scope>
+        </dependency>
+        
         <!-- Logging Libraries (slf4j + log4j2) -->
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
@@ -126,25 +134,25 @@
                     </execution>
                 </executions>
             </plugin>
-                <plugin>
-                    <groupId>org.owasp</groupId>
-                    <artifactId>dependency-check-maven</artifactId>
-                    <version>12.2.2</version>
-                    <configuration>
-                        <failBuildOnCVSS>7</failBuildOnCVSS>
-                        <nvdApiKey>4C3A56DF-43C5-4D1C-9E90-BB20D38F1822</nvdApiKey>
-                        <dataDirectory>${user.home}/.m2/repository/org/owasp/dependency-check-data/12.2.2/</dataDirectory>
-                        <autoUpdate>true</autoUpdate>
-                        <nvdValidForHours>4</nvdValidForHours>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>check</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>12.2.2</version>
+                <configuration>
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <nvdApiKey>4C3A56DF-43C5-4D1C-9E90-BB20D38F1822</nvdApiKey>
+                    <dataDirectory>${user.home}/.m2/repository/org/owasp/dependency-check-data/12.2.2/</dataDirectory>
+                    <autoUpdate>true</autoUpdate>
+                    <nvdValidForHours>4</nvdValidForHours>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
             <plugins>

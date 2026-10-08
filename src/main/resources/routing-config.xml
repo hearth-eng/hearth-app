@@ -272,7 +272,7 @@
     </resource-mapping>
 
     <resource-mapping name="query"
-                      path="/admin/query"
+                      path="/admin/dbQuery"
                       resource="com.hearth.app.handler.DBQueryHandler">
 
         <mapping uri="" method="POST" api="executeSql"/>

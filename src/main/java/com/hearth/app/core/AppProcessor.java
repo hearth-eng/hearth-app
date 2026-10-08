@@ -6,9 +6,13 @@ import com.hearth.app.event.AvailabilityGenCodec;
 import com.hearth.app.event.AvailabilityGenEvent;
 import com.hearth.app.event.BookingEventConsumer;
 import com.hearth.app.event.BookingCodec;
+import com.hearth.app.event.BroadcastCodec;
+import com.hearth.app.event.BroadcastEventConsumer;
+import com.hearth.app.event.BroadcastEventWrapper;
 import com.hearth.app.event.ProfessionalEventConsumer;
 import com.hearth.app.event.ProfessionalRegCodec;
 import com.hearth.app.event.ProfessionalRegEvent;
+import com.hearth.app.listener.DistributedCache;
 import com.hearth.app.model.Booking;
 import com.hearth.app.util.Constants;
 import io.vertx.core.AbstractVerticle;
@@ -36,6 +40,7 @@ public class AppProcessor extends AbstractVerticle {
     public void start() throws Exception {
         initEventBus();
         initTimer();
+        initSubscriber();
         
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Started Verticle: {}", NAME);
@@ -55,6 +60,9 @@ public class AppProcessor extends AbstractVerticle {
         getVertx().eventBus().consumer(Constants.PROF_REG_ADDRESS, new ProfessionalEventConsumer());
         getVertx().eventBus().registerDefaultCodec(ProfessionalRegEvent.class, new ProfessionalRegCodec());
         
+        getVertx().eventBus().consumer(Constants.BROADCAST_ADDRESS, new BroadcastEventConsumer());
+        getVertx().eventBus().registerDefaultCodec(BroadcastEventWrapper.class, new BroadcastCodec());
+        
     }
     
     private void initTimer() {
@@ -72,6 +80,10 @@ public class AppProcessor extends AbstractVerticle {
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Scheduled booking timer. Initial Delay: {}. Pause Time (s): {}", delay, interval);
         }
+    }
+    
+    private void initSubscriber() {
+        DistributedCache.get().init();
     }
 
     @Override

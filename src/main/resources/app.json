@@ -4,6 +4,9 @@
         "user": "hearth",
         "password": "p@$$word"
     },
+    "redis.config": {
+        "url": "redis://localhost:6379"
+    },
     "testing" : {
         "user" : "test",
         "password" : "p@$$word"
