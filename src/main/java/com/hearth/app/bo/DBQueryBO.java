@@ -4,6 +4,10 @@ import com.hearth.app.auth.AppUser;
 import com.hearth.app.dao.UtilityDAO;
 import com.hearth.app.model.User;
 import com.hearth.app.util.QueryParams;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -102,6 +106,36 @@ public class DBQueryBO {
                 }
             }
         }
+        formatDateTimeCells(result);
         return result;
+    }
+
+    /**
+     * Jackson serializes java.sql.Timestamp/Date/Time (and java.util.Date) as
+     * raw epoch milliseconds by default - fine for machine-to-machine APIs,
+     * unreadable in the admin "Execute SQL" UI. Since this handler runs
+     * arbitrary admin SQL with no column metadata, there's no schema to
+     * consult here - just walk every cell of every row and reformat whatever
+     * turns out to be a JDBC date/time type in place.
+     */
+    private void formatDateTimeCells(List<Object[]> rows) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        for (Object[] row : rows) {
+            for (int i = 0; i < row.length; i ++) {
+                Object cell = row[i];
+                if (cell instanceof Timestamp) {
+                    row[i] = timestampFormat.format((Timestamp) cell);
+                }
+                else if (cell instanceof Time) {
+                    row[i] = timeFormat.format((Time) cell);
+                }
+                else if (cell instanceof Date) {
+                    row[i] = dateFormat.format((Date) cell);
+                }
+            }
+        }
     }
 }

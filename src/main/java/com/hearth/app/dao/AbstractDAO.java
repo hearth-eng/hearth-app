@@ -36,7 +36,7 @@ public abstract class AbstractDAO {
     private static final String NOT_NULL = "not_null";
     
     protected static final String PU_NAME = "hearth-app-pu";
-    
+        
     /**
      * Builds a query for the specified table using all available columns.
      *

@@ -13,7 +13,7 @@ import org.javalabs.jpa.dialect.SQLDialect;
  *
  * @author schan280
  */
-public class UtilityDAOImpl implements UtilityDAO {
+public class UtilityDAOImpl extends AbstractDAO implements UtilityDAO {
 
     private static final String COL_MD_QUERY
             = "\nSELECT column_name, ordinal_position, is_nullable, data_type"
@@ -21,7 +21,7 @@ public class UtilityDAOImpl implements UtilityDAO {
             + "\n WHERE table_schema = ?"
             + "\n   AND table_name = ?";
 
-    @PersistenceContext(name = "ecm-pu")
+    @PersistenceContext(name = PU_NAME)
     private EntityManager em;
 
     @Override

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import org.javalabs.jpa.util.QueryHints;
 
 /**
  * Concrete DAO class to handle database operations related.
@@ -126,7 +127,7 @@ public class AvailabilityDAOImpl extends AbstractDAO implements AvailabilityDAO 
             query.desc();
         }
 
-        TypedQuery q = em.createNativeQuery(query.toQuery(), Availability.class);
+        TypedQuery<Availability> q = em.createNativeQuery(query.toQuery(), Availability.class);
         List<Object> binds = query.params();
         
         idx = 1;
@@ -166,7 +167,8 @@ public class AvailabilityDAOImpl extends AbstractDAO implements AvailabilityDAO 
             , Integer neighbourhoodId
             , String date
             , String startTime
-            , String endTime) {
+            , String endTime
+            , Boolean takeLock) {
         
         List<Availability> availabilities = internalFind(
                 serviceId
@@ -174,6 +176,7 @@ public class AvailabilityDAOImpl extends AbstractDAO implements AvailabilityDAO 
                 , date
                 , startTime
                 , endTime
+                , takeLock
                 , Boolean.TRUE);
         
         if (availabilities.isEmpty()) {
@@ -182,6 +185,7 @@ public class AvailabilityDAOImpl extends AbstractDAO implements AvailabilityDAO 
                     , date
                     , startTime
                     , endTime
+                    , takeLock
                     , Boolean.FALSE);
         }
         return availabilities;
@@ -192,16 +196,29 @@ public class AvailabilityDAOImpl extends AbstractDAO implements AvailabilityDAO 
             , String date
             , String startTime
             , String endTime
+            , Boolean takeLock
             , Boolean fair) {
         
-        String query = queryGen.matchingProfessionalQuery(fair);
+        String query = queryGen.matchingProfessionalQuery(takeLock, fair);
         
-        TypedQuery q = em.createNativeQuery(query, Availability.class);
+        TypedQuery<Availability> q = em.createNativeQuery(query, Availability.class);
         List<Object> binds = new ArrayList<>(List.of(date, startTime, endTime, 1, neighbourhoodId, serviceId, 0));
         
         if (fair) {
             binds.add(1);
         }
+        
+        Integer idx = 1;
+        for (Object bind : binds) {
+            q.setParameter(idx ++, bind);
+        }
+        return q.getResultList();
+    }
+    
+    @Override
+    public List<Availability> findProfAvailability(String query, List<Object> binds) {
+        TypedQuery<Availability> q = em.createNamedQuery(query, Availability.class)
+                .setHint(QueryHints.POPULATE_RESULT_COLUMN, Boolean.TRUE);
         
         Integer idx = 1;
         for (Object bind : binds) {

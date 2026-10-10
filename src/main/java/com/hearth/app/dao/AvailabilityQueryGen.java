@@ -59,7 +59,7 @@ public class AvailabilityQueryGen {
         return buff.toString();
     }
     
-    String matchingProfessionalQuery(Boolean fair) {
+    String matchingProfessionalQuery(Boolean takeLock, Boolean fair) {
         String fairQuery = """
             WITH params AS (
                 SELECT
@@ -99,7 +99,6 @@ public class AvailabilityQueryGen {
              ORDER BY a.professional_id, a.start_time
              LIMIT (SELECT EXTRACT(HOUR FROM (work_end - work_start))
                       FROM params)
-               FOR UPDATE;
             """;
         
         String query = """
@@ -135,9 +134,12 @@ public class AvailabilityQueryGen {
              ORDER BY a.professional_id, a.start_time
              LIMIT (SELECT EXTRACT(HOUR FROM (work_end - work_start))
                       FROM params)
-             FOR UPDATE;
             """;
         
-        return fair ? fairQuery : query;
+        String q = fair ? fairQuery : query;
+        if (takeLock) {
+            q += "\n FOR UPDATE";
+        }
+        return q;
     }
 }

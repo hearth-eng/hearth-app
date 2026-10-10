@@ -9,10 +9,10 @@ import com.hearth.app.dao.ServiceDAO;
 import com.hearth.app.event.AvailabilityGenEvent;
 import com.hearth.app.model.Availability;
 import com.hearth.app.model.Professional;
-import com.hearth.app.model.Service;
 import com.hearth.app.util.QueryParams;
 import com.hearth.app.util.SearchCriteria;
 import java.sql.Date;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,25 +50,51 @@ public class AvailabilityMgmtBO {
     public List<Availability> viewProfessionalAvailability(AppUser usr, QueryParams params) {
         StopWatch timer = StopWatch.newTimer();
         timer.start();
-
-        Integer serviceId = Integer.valueOf(params.param("serviceId"));
-        Integer neighbourhoodId = Integer.valueOf(params.param("neighbourhoodId"));
         
-        Service service = serviceDAO.find(new Service.ServicePK(serviceId));
-        if (service == null) {
-            throw new IllegalArgumentException("No service found with id " + serviceId);
+        String namedQuery = "";
+        List<Object> bind = null;
+        
+        if (! params.contains("date")) {
+            throw new IllegalArgumentException("Must provide a date");
         }
-        String date = params.param("date");
-        String start = params.param("start");
-        String end = params.param("end");
+        if (! params.contains("serviceId")) {
+            throw new IllegalArgumentException("Must provide the serviceId");
+        }
         
-        List<Availability> records = availabilityDAO.findProfessional(
-                serviceId
-                , neighbourhoodId
-                , date
-                , start
-                , end);
-
+        Date date = Date.valueOf(params.param("date"));
+        Integer serviceId = Integer.valueOf(params.param("serviceId"));
+        
+        if (params.contains("cityId") && ! params.contains("neighbourhoodId")) {
+            namedQuery = "Availability.findByDateAndService";
+            Integer cityId = Integer.valueOf(params.param("cityId"));
+            bind = List.of(date, 0, serviceId, cityId);
+            
+            if (params.contains("start")) {
+                namedQuery = "Availability.findByDateServiceAndSlot";
+                
+                String start = params.param("start");
+                Time startTime = Time.valueOf(start.length() == 5 ? start + ":00" : start);
+                bind = List.of(date, startTime, 0, serviceId, cityId);
+            }
+        }
+        else if (params.contains("neighbourhoodId")) {
+            namedQuery = "Availability.findByDateServiceAndNeighbourhood";
+            Integer neighbourhoodId = Integer.valueOf(params.param("neighbourhoodId"));
+            bind = List.of(date, 0, serviceId, neighbourhoodId);
+            
+            if (params.contains("start")) {
+                namedQuery = "Availability.findByDateServiceNeighbourhoodAndSlot";
+                
+                String start = params.param("start");
+                Time startTime = Time.valueOf(start.length() == 5 ? start + ":00" : start);
+                bind = List.of(date, startTime, 0, serviceId, neighbourhoodId);
+            }
+        }
+        else {
+            throw new IllegalArgumentException("Must pass either cityId or neighbourhoodId");
+        }
+        List<Availability> records = availabilityDAO.findProfAvailability(namedQuery, bind);
+        
         timer.stop();
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Fetched {} eligible availability record(s). Elapsed time(ms): {}", records.size(), timer.elapsedTimeMillis());
@@ -86,7 +112,7 @@ public class AvailabilityMgmtBO {
             Date minDate = (Date)dates[0];
             Date maxDate = (Date)dates[1];
 
-            if (availEvent.getProfessionalIds() == null && minDate.equals(today) && maxDate.after(today)) {
+            if (availEvent.getProfessionalIds() == null && (minDate.equals(today) || minDate.before(today)) && maxDate.after(today)) {
                 LOGGER.warn("Availability has already been generated. Ignoring the request.");
                 return null;
             }

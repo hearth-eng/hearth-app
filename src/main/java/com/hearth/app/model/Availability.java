@@ -9,11 +9,13 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.NamedNativeQueries;
 import jakarta.persistence.NamedNativeQuery;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.io.Serializable;
 import java.sql.Date;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Objects;
+import org.javalabs.jpa.annotation.ResultColumn;
 
 
 /**
@@ -27,7 +29,56 @@ import java.util.Objects;
 @IdClass(Availability.AvailabilityPK.class)
 @NamedNativeQueries({
     @NamedNativeQuery(name = "Availability.selectAll", query = "SELECT * FROM fks_availabilities"),
-    @NamedNativeQuery(name = "Availability.selectMinMaxDate", query = "SELECT MIN(date), MAX(date) FROM fks_availabilities")
+    @NamedNativeQuery(name = "Availability.selectMinMaxDate", query = "SELECT MIN(date), MAX(date) FROM fks_availabilities"),
+    
+    @NamedNativeQuery(name = "Availability.findByDateAndService"
+            , query = """
+                    SELECT c.*, a.professional_id, b.full_name, b.phone1
+                      FROM fks_professionals a
+                     INNER JOIN fks_users b ON (a.user_id = b.user_id)
+                     INNER JOIN fks_availabilities c ON (a.professional_id = c.professional_id AND c.date = ? AND is_booked = ?)
+                     INNER JOIN fks_professional_services d ON (a.professional_id = d.professional_id AND d.service_id = ?)
+                     WHERE EXISTS (
+                           SELECT 1
+                             FROM fks_professional_neighbourhoods e
+                            INNER JOIN fks_neighbourhoods f ON e.neighbourhood_id = f.neighbourhood_id
+                            WHERE e.professional_id = a.professional_id
+                              AND f.city_id = ?)
+                    """),
+    @NamedNativeQuery(name = "Availability.findByDateServiceAndSlot"
+            , query = """
+                    SELECT c.*, a.professional_id, b.full_name, b.phone1
+                      FROM fks_professionals a
+                     INNER JOIN fks_users b ON (a.user_id = b.user_id)
+                     INNER JOIN fks_availabilities c ON (a.professional_id = c.professional_id AND c.date = ? AND c.start_time = ? AND is_booked = ?)
+                     INNER JOIN fks_professional_services d ON (a.professional_id = d.professional_id AND d.service_id = ?)
+                     WHERE EXISTS (
+                           SELECT 1
+                             FROM fks_professional_neighbourhoods e
+                            INNER JOIN fks_neighbourhoods f ON e.neighbourhood_id = f.neighbourhood_id
+                            WHERE e.professional_id = a.professional_id
+                              AND f.city_id = ?)
+                    """),
+    @NamedNativeQuery(name = "Availability.findByDateServiceAndNeighbourhood"
+            , query = """
+                    SELECT c.*, a.professional_id, b.full_name, b.phone1
+                      FROM fks_professionals a
+                     INNER JOIN fks_users b ON (a.user_id = b.user_id)
+                     INNER JOIN fks_availabilities c ON (a.professional_id = c.professional_id AND c.date = ? AND is_booked = ?)
+                     INNER JOIN fks_professional_services d ON (a.professional_id = d.professional_id AND d.service_id = ?)
+                     INNER JOIN fks_professional_neighbourhoods e ON (a.professional_id = e.professional_id AND e.neighbourhood_id = ?)
+                     INNER JOIN fks_neighbourhoods f ON (e.neighbourhood_id = f.neighbourhood_id)
+                    """),
+    @NamedNativeQuery(name = "Availability.findByDateServiceNeighbourhoodAndSlot"
+            , query = """
+                    SELECT c.*, a.professional_id, b.full_name, b.phone1
+                      FROM fks_professionals a
+                     INNER JOIN fks_users b ON (a.user_id = b.user_id)
+                     INNER JOIN fks_availabilities c ON (a.professional_id = c.professional_id AND c.date = ? AND c.start_time = ? AND is_booked = ?)
+                     INNER JOIN fks_professional_services d ON (a.professional_id = d.professional_id AND d.service_id = ?)
+                     INNER JOIN fks_professional_neighbourhoods e ON (a.professional_id = e.professional_id AND e.neighbourhood_id = ?)
+                     INNER JOIN fks_neighbourhoods f ON (e.neighbourhood_id = f.neighbourhood_id)
+                    """)
 })
 public class Availability implements Serializable, Cloneable {
 
@@ -56,6 +107,14 @@ public class Availability implements Serializable, Cloneable {
 
     @Column(name = "updated_at", nullable = true, updatable = true)
     private Timestamp updatedAt;
+
+    @Transient
+    @ResultColumn(name = "full_name")
+    private String fullName;
+
+    @Transient
+    @ResultColumn(name = "phone1")
+    private String phone1;
 
     public Availability() {}
 
@@ -121,6 +180,22 @@ public class Availability implements Serializable, Cloneable {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getFullName() {
+        return fullName;
+    }
+
+    public void setFullName(String fullName) {
+        this.fullName = fullName;
+    }
+
+    public String getPhone1() {
+        return phone1;
+    }
+
+    public void setPhone1(String phone1) {
+        this.phone1 = phone1;
     }
 
     public static class AvailabilityPK {

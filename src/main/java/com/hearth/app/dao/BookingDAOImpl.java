@@ -140,7 +140,8 @@ public class BookingDAOImpl extends AbstractDAO implements BookingDAO {
                         + "-" + String.format("%02d", (cal.get(Calendar.MONTH) + 1))
                         + "-" + String.format("%02d", cal.get(Calendar.DAY_OF_MONTH))
                 , start
-                , end);
+                , end
+                , Boolean.TRUE);
         
         if (! availabilities.isEmpty()) {
             booking.setProfessionalId(availabilities.get(0).getProfessionalId());

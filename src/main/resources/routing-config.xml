@@ -275,16 +275,12 @@
                       path="/admin/dbQuery"
                       resource="com.hearth.app.handler.DBQueryHandler">
 
-        <mapping uri="" method="POST" api="executeSql"/>
+        <mapping uri="" method="POST" consume="text/plain" api="executeSql"/>
     </resource-mapping>
 
     <resource-mapping name="AvailabilityMgmt" path="/admin/availabilities" resource="com.hearth.app.handler.AvailabilityMgmtHandler">
         <mapping uri="/calendar" method="POST" api="generate"/>
         <mapping uri="/professionals" method="GET" api="viewProfAvailability"/>
-    </resource-mapping>
-
-    <resource-mapping name="ProfessionalMgmt" path="/admin/professionals" resource="com.hearth.app.handler.ProfessionalMgmtHandler">
-        <mapping uri="" method="POST" api="approve"/>
     </resource-mapping>
 
     <resource-mapping name="ProfessionalMgmt" path="/admin/professionals" resource="com.hearth.app.handler.ProfessionalMgmtHandler">

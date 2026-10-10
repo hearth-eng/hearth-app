@@ -15,6 +15,7 @@ import com.hearth.app.event.ProfessionalRegEvent;
 import com.hearth.app.listener.DistributedCache;
 import com.hearth.app.model.Booking;
 import com.hearth.app.util.Constants;
+import com.hearth.app.util.ModernDateUtil;
 import io.vertx.core.AbstractVerticle;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -71,6 +72,9 @@ public class AppProcessor extends AbstractVerticle {
             config = new HashMap<>();
         }
         
+        // Start booking timer.
+        // This timer will periodically check if any pending booking exists, and if so, try to
+        // assign a professional to it.
         long delay = 0L;
         long interval = (Integer)config.getOrDefault("booking.timer.interval.s", 60);
         
@@ -79,6 +83,19 @@ public class AppProcessor extends AbstractVerticle {
         
         if (LOGGER.isInfoEnabled()) {
             LOGGER.info("Scheduled booking timer. Initial Delay: {}. Pause Time (s): {}", delay, interval);
+        }
+        
+        // Start the availability calendar timer.
+        // This timer will run every midnight at 12:10 and create a calendar entry for all the verified
+        // professional in the availabilities table.
+        delay = ModernDateUtil.calculateDiffInMillis(12, 10);
+        interval = (Integer)config.getOrDefault("availability.timer.interval.s", 3600);
+        
+        timerId = getVertx().setPeriodic(delay, interval * 1000L, new AvailabilityMgmtTimer());
+        timerIds.add(timerId);
+        
+        if (LOGGER.isInfoEnabled()) {
+            LOGGER.info("Scheduled availability calendar daily timer. Initial Delay: {}. Pause Time (s): {}", delay, interval);
         }
     }
     

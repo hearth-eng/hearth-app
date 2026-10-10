@@ -23,7 +23,7 @@ public class BookingTimer implements Handler<Long> {
     }
     
     @Override
-    public void handle(Long event) {
+    public void handle(Long id) {
         if (LOGGER.isDebugEnabled()) {
             LOGGER.debug("Time {} is invoked", getClass().getSimpleName());
         }

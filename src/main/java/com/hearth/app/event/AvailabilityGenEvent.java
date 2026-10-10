@@ -10,8 +10,9 @@ import java.util.Map;
  */
 public class AvailabilityGenEvent {
     
-    private List<Integer> professionalIds;
     private Integer numberOfDays = 5;
+    private List<Integer> professionalIds;
+    private Boolean strict = Boolean.FALSE;
     
     public static AvailabilityGenEvent from(Map<String, Object> payload) {
         AvailabilityGenEvent event = new AvailabilityGenEvent();
@@ -34,6 +35,14 @@ public class AvailabilityGenEvent {
 
     public Integer getNumberOfDays() {
         return numberOfDays;
+    }
+
+    public Boolean getStrict() {
+        return strict;
+    }
+
+    public void setStrict(Boolean strict) {
+        this.strict = strict;
     }
 
     @Override

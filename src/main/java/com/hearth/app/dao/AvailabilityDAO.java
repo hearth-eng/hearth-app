@@ -105,14 +105,19 @@ public interface AvailabilityDAO {
      * @param startTime
      * @param endTime
      * @param date
+     * @param takeLock
      * 
-     * @return 
+     * @return List
      */
     @NotSupported
     List<Availability> findProfessional(Integer serviceId
             , Integer neighbourhoodId
             , String date
             , String startTime
-            , String endTime);
+            , String endTime
+            , Boolean takeLock);
+    
+    @NotSupported
+    List<Availability> findProfAvailability(String query, List<Object> binds);
 }
 
