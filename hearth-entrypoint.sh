@@ -50,17 +50,26 @@ DB_PASSWORD_ESC=$(json_escape "${DB_PASSWORD:-}")
 DB_URL="jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}?sslmode=require&sslrootcert=/certs/rds-global-bundle.pem"
 DB_URL_ESC=$(json_escape "$DB_URL")
 
+# DistributedCache.init() (Redis pub/sub cache-invalidation subscriber) reads
+# redis.config.url from this same runtime config - REDIS_URL is already a full
+# rediss://:<auth-token>@host:port URL (same secret value hearth-ui uses), so
+# it's passed straight through, just JSON-escaped.
+REDIS_URL_ESC=$(json_escape "${REDIS_URL:-}")
+
 cat > /app/app-runtime.json <<EOF
 {
     "db.config": {
         "url": "${DB_URL_ESC}",
         "user": "${DB_USER_ESC}",
         "password": "${DB_PASSWORD_ESC}"
+    },
+    "redis.config": {
+        "url": "${REDIS_URL_ESC}"
     }
 }
 EOF
 chmod 600 /app/app-runtime.json
-unset DB_USER DB_PASSWORD
+unset DB_USER DB_PASSWORD REDIS_URL
 
 export JAVA_OPTS="${JAVA_OPTS:-} -Dapp.config=/app/app-runtime.json"
 
